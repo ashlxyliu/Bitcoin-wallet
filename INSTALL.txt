@@ -20,7 +20,10 @@ Ensure you have OCaml and OPAM installed on your system. If not, visit
 
 3. **Install Dependencies**
 
-   Run `opam install . --deps-only` to install the necessary OPAM packages.
+  Run: 
+  - opam install ANSITerminal 
+  - opam update 
+  - opam upgrade 
 
 4. **Build the Project**
 
