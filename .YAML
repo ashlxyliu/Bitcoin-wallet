@@ -1,0 +1,32 @@
+---
+# Members of your group.
+group:
+  - name: Eliza Konvicka
+    netid: ejk236
+  - name: Andy Marous 
+    netid: acm337
+  - name: Ashley Liu
+    netid: awl77
+# Your PM.
+pm:
+  name: James Kim
+  netid: jjk297
+# Set to false if you don't want your gallery entry to be public.
+publish: true
+# Pithy title
+title: "Bitcoin Wallet: Secure and Efficient Cryptocurrency Management"
+# OK if this is a Cornell Github link, but public gallery viewers won't be able to see it.
+git-repo: "git@github.coecis.cornell.edu:ejk236/final.git"
+# If you have no demo screencast, replace the url string with an empty string ""
+demo-video-url: ""
+# Write a short, attention-grabbing description of your project.
+desc: >
+  This project presents a robust Bitcoin Wallet designed for secure and efficient
+  management of cryptocurrencies. It features a sleek, user-friendly interface for
+  executing transactions, monitoring balances, and managing multiple addresses. 
+  Advanced functionalities include support for multi-signature transactions, 
+  real-time price tracking, and custom transaction fees to optimize processing times.
+  
+  We've also implemented a unique security module to ensure the highest level of 
+  user data protection, leveraging encryption and cold storage options. Dive into 
+  the world of cryptocurrency with our intuitive and comprehensive Bitcoin Wallet.
