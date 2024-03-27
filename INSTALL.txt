@@ -1,0 +1,46 @@
+# Installation Guide for Bitcoin Wallet
+
+## Prerequisites
+
+- OCaml
+- OPAM
+
+Ensure you have OCaml and OPAM installed on your system. If not, visit 
+[OCaml's official site](https://ocaml.org) for installation instructions.
+
+## Setup Instructions
+
+1. **Clone the Repository**
+
+   `git clone git@github.coecis.cornell.edu:ejk236/final.git'
+
+2. **Navigate to the Project Directory (final)**
+
+   `cd final`
+
+3. **Install Dependencies**
+
+  Run: 
+  - opam install ANSITerminal 
+  - opam update 
+  - opam upgrade 
+
+4. **Build the Project**
+
+   `dune build @all`
+
+## Running the Project
+
+- To start your Bitcoin wallet, run: `dune exec ./src/main.exe` (Adjust the path 
+according to your project structure).
+
+## Troubleshooting
+
+- If you encounter any issues with package versions, ensure that you are using the 
+same OCaml version as specified in the project's `dune-project` file.
+- For additional help, refer to the OCaml documentation or the project's FAQ section.
+
+## Note
+
+If you are running on a different OS than the project was developed on, and encounter 
+issues, consider using the 3110 virtual machine as a neutral ground.
