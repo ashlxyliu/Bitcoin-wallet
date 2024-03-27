@@ -1,2 +1,3 @@
 (library
- (name final))
+ (name final)
+ (libraries cryptokit zarith))
