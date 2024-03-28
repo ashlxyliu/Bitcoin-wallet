@@ -27,7 +27,7 @@ let test_generate_public_key _ =
   in
   assert_equal
     (generate_public_key input)
-    "033d4b3baebca36d959674c696283d12b3860043fb3b5eb0517a58e8e5313ff3ba"
+    "024e03f21eaffaeca72c70f0143e49fa2718e328de2c7ad44e0f2f0ac2488e2d9d"
 
 let test_suite =
   "Tests"

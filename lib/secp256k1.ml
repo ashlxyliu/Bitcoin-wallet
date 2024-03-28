@@ -36,24 +36,34 @@ let point_double p =
       let newy = (m * (x - newx)) - y in
       Point (newx, newy)
 
-let rec scalar_mult (k : int) (p : point) =
-  match (k, p) with
-  | _, Infinity -> Infinity (* k * O = O *)
-  | 0, _ -> Infinity (* 0 * p = O *)
-  | 1, _ -> p (* 1 * p = p *)
-  | _, _ ->
-      let q = if Z.of_int k mod Z.of_int 2 = Z.of_int 0 then p else Infinity in
+let rec scalar_mult (k : Z.t) (p : point) =
+  try
+    match (Z.to_int k, p) with
+    | _, Infinity -> Infinity (* k * O = O *)
+    | 0, _ -> Infinity (* 0 * p = O *)
+    | 1, _ -> p (* 1 * p = p *)
+    | _, _ ->
+        let q = if k mod Z.of_int 2 = Z.of_int 0 then p else Infinity in
+        let p_doubled = point_double p in
+        (* Double the point p *)
+        let k_half = k / Z.of_int 2 in
+        point_add q (scalar_mult k_half p_doubled)
+  with Overflow ->
+    if p = Infinity then Infinity
+    else
+      let q = if k mod Z.of_int 2 = Z.of_int 0 then p else Infinity in
       let p_doubled = point_double p in
       (* Double the point p *)
-      let k_half = Z.of_int k / Z.of_int 2 in
-      point_add q (scalar_mult (Z.to_int k_half) p_doubled)
-(* Add and recurse *)
+      let k_half = k / Z.of_int 2 in
+      point_add q (scalar_mult k_half p_doubled)
 
 let generate_public_key privk =
   let private_key = Z.of_string_base 16 privk in
-  let point = scalar_mult (Z.to_int private_key) g in
+  let point = scalar_mult private_key g in
   match point with
   | Infinity -> failwith "Invalid private key"
   | Point (x, y) ->
-      if y mod Z.of_int 2 = Z.of_int 0 then "02" ^ Z.to_string x
-      else "03" ^ Z.to_string x
+      let x_hex = Z.format "%x" x in
+      (* Convert x to a hexadecimal string *)
+      if Z.equal (Z.rem y (Z.of_int 2)) Z.zero then "02" ^ x_hex
+      else "03" ^ x_hex
