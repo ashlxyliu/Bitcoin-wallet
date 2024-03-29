@@ -4,6 +4,10 @@
 
 - OCaml
 - OPAM
+- ANSITerminal
+- Cryptokit
+- Zarith
+- Mirage-crypto-ec
 
 Ensure you have OCaml and OPAM installed on your system. If not, visit 
 [OCaml's official site](https://ocaml.org) for installation instructions.
@@ -22,6 +26,10 @@ Ensure you have OCaml and OPAM installed on your system. If not, visit
 
   Run: 
   - opam install ANSITerminal 
+  - opam install Cryptokit
+  - opam install Cryptokit
+  - opam install Zarith
+  - opam install Mirage-crypto-ec
   - opam update 
   - opam upgrade 
 

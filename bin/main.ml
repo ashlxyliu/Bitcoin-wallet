@@ -1,4 +1,5 @@
 open ANSITerminal
+open Final.Wallet
 
 let print_main_menu () =
   print_string [ Foreground Cyan ] "Welcome to our Bitcoin wallet\n";
@@ -24,8 +25,9 @@ let rec main_menu () =
 
 and create_new_wallet () =
   print_string [ yellow ] "Creating a new wallet...\n";
-  (* This is where you would add your wallet creation and key generation logic. *)
-  print_string [ yellow ] "New wallet created successfully!\n";
+  let sk = generate_private_key () in
+  let pk = generate_public_key sk in
+  print_string [ yellow ] ("Your new wallet address is: " ^ pk ^ "\n");
   main_menu ()
 
 let () = main_menu ()
