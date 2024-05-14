@@ -1,4 +1,5 @@
 (executable
  (public_name final)
  (name main)
- (libraries final ANSITerminal))
+ (modules main scraper)
+ (libraries final ANSITerminal cohttp-lwt-unix yojson lwt cryptokit))

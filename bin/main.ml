@@ -1,12 +1,14 @@
 open ANSITerminal
 open Final.Wallet
+open Scraper
 
 let print_main_menu () =
   print_string [ Foreground Cyan ] "Welcome to our Bitcoin wallet\n";
   print_string [ Foreground Cyan ] "Please select an option:\n";
   print_string [ Foreground Cyan ] "1. My Active Wallets\n";
   print_string [ Foreground Cyan ] "2. Create New Wallet\n";
-  print_string [ Foreground Cyan ] "3. Exit\n";
+  print_string [ Foreground Cyan ] "3. Fetch Coin Prices\n";
+  print_string [ Foreground Cyan ] "4. Exit\n";
   print_string [ Reset ] "> "
 
 let rec main_menu () =
@@ -17,6 +19,9 @@ let rec main_menu () =
       main_menu ()
   | "2" -> create_new_wallet ()
   | "3" ->
+      Lwt_main.run (fetch_and_display_prices ());
+      main_menu ()
+  | "4" ->
       print_string [ green ] "Exiting... Goodbye!\n";
       exit 0
   | _ ->
