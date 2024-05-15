@@ -30,6 +30,7 @@ Ensure you have OCaml and OPAM installed on your system. If not, visit
   - opam install Cryptokit
   - opam install Zarith
   - opam install Mirage-crypto-ec
+  - opam install cohttp-lwt-unix
   - opam update 
   - opam upgrade 
 
