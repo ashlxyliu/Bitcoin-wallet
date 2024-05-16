@@ -1,3 +1,5 @@
+open Cryptolib
+
 (* Function to generate a private key *)
 let generate_private_key () =
   (* Generate a 32-byte random string using a secure random number generator *)
@@ -18,3 +20,8 @@ let generate_public_key privk =
 
   (* Return the generated public key *)
   public_key
+
+let generate_wallet_address pk =
+  let sha = sha256 pk in
+  let ripemd = ripemd160 sha in
+  base58check ripemd

@@ -13,15 +13,12 @@ open Yojson.Basic.Util
 exception APIError of string
 
 (* Define the filename for storing wallet addresses *)
-let wallets_file = "wallets.txt"
+let wallets_file = "wallets.csv"
 
 (* Function to save a wallet address to a file *)
-let save_wallet_address address =
-  let out_channel =
-    open_out_gen [ Open_append; Open_creat ] 0o666 wallets_file
-  in
-  output_string out_channel (address ^ "\n");
-  close_out out_channel
+let save_wallet_address name address pk sk =
+  let wallets = Csv.load wallets_file in
+  Csv.save wallets_file ([ name; address; pk; sk ] :: wallets)
 
 (* Function to clear the terminal screen *)
 let clear_screen () =
@@ -80,101 +77,77 @@ let rec main_menu () =
 
 (* Function to create a new wallet *)
 and create_new_wallet () =
-  print_string [ yellow ] "Creating a new wallet...\n";
+  print_string [ yellow ] "Enter a name for your new wallet: \n";
+  let name = read_line () in
   let sk = generate_private_key () in
   let pk = generate_public_key sk in
-  print_string [ yellow ] ("Your new wallet address is: " ^ pk ^ "\n");
-  save_wallet_address pk
+  let address = generate_wallet_address pk in
+  print_string [ yellow ]
+    ("Your new wallet, " ^ name ^ ", has address: " ^ address ^ "\n");
+  save_wallet_address name address pk sk
 
 (* Function to display active wallets *)
 and display_active_wallets () =
-  print_string [ yellow ] "Your active wallets:\n";
-  try
-    let in_channel = open_in wallets_file in
-    let rec read_wallets idx =
-      try
-        let address = input_line in_channel in
-        print_string [ green ] (Printf.sprintf "%d. %s\n" idx address);
-        read_wallets (idx + 1)
-      with End_of_file -> close_in in_channel
+  let concat_string_list lst =
+    let rec aux lst acc =
+      match lst with [] -> acc | h :: t -> aux t (acc ^ " " ^ h)
     in
-    read_wallets 1
-  with Sys_error _ -> print_string [ red ] "No active wallets found.\n"
+    aux lst ""
+  in
+  let rec print_wallet_list lst =
+    match lst with
+    | [] -> ()
+    | h :: t ->
+        print_string [ green ] (concat_string_list h ^ "\n");
+        print_wallet_list t
+  in
+  let wallets = Csv.load wallets_file in
+  if List.length wallets = 0 then
+    print_string [ red ] "No active wallets found.\n"
+  else print_string [ yellow ] "Your active wallets:\n";
+  print_wallet_list wallets
 
 (* Helper function to get a list of wallet addresses *)
-and get_wallet_list () =
-  try
-    let in_channel = open_in wallets_file in
-    let rec read_wallets acc =
-      try
-        let address = input_line in_channel in
-        read_wallets (address :: acc)
-      with End_of_file ->
-        close_in in_channel;
-        List.rev acc
-    in
-    read_wallets []
-  with Sys_error _ -> []
+and get_address_list () =
+  let wallets = Csv.load wallets_file in
+  List.map (fun lst -> List.hd (List.tl lst)) wallets
 
 (* Function to check the balance of a wallet *)
 and check_balance () =
-  let wallet_list = get_wallet_list () in
+  let wallet_list = get_address_list () in
   if wallet_list = [] then print_string [ red ] "No active wallets found.\n"
-  else (
-    print_string [ yellow ] "Select a wallet to check balance:\n";
-    List.iteri
-      (fun idx address ->
-        print_string [ green ] (Printf.sprintf "%d. %s\n" (idx + 1) address))
-      wallet_list;
-    print_string [ Reset ] "> ";
-    try
-      let choice = read_int () in
-      if choice < 1 || choice > List.length wallet_list then
-        print_string [ red ] "Invalid choice.\n"
-      else
-        let address = List.nth wallet_list (choice - 1) in
-        Lwt_main.run (fetch_and_display_balance address)
-    with Failure _ -> print_string [ red ] "Invalid input.\n")
+  else
+    let addresses = Array.of_list wallet_list in
+    print_string [ yellow ]
+      "Enter the name of the wallet you'd like to check:\n";
+    let name = read_line () in
+    let rec name_index lst acc =
+      match lst with
+      | [] -> acc
+      | h :: t -> if List.hd h = name then acc else name_index t (acc + 1)
+    in
+    let i = name_index (Csv.load wallets_file) 0 in
+    if i = List.length wallet_list then print_string [ red ] "Invalid input.\n"
+    else
+      let address = addresses.(i) in
+      print_endline address;
+      Lwt_main.run (fetch_and_display_balance address)
 
 (* Function to remove a wallet address *)
 and remove_wallet () =
-  let wallet_list = get_wallet_list () in
-  if wallet_list = [] then print_string [ red ] "No active wallets found.\n"
-  else (
-    print_string [ yellow ] "Select a wallet to remove:\n";
-    List.iteri
-      (fun idx address ->
-        print_string [ green ] (Printf.sprintf "%d. %s\n" (idx + 1) address))
-      wallet_list;
-    print_string [ Reset ] "> ";
-    try
-      let choice = read_int () in
-      if choice < 1 || choice > List.length wallet_list then
-        print_string [ red ] "Invalid choice.\n"
-      else
-        let address_to_remove = List.nth wallet_list (choice - 1) in
-        let temp_file = "temp_wallets.txt" in
-        try
-          let in_channel = open_in wallets_file in
-          let out_channel = open_out temp_file in
-          try
-            while true do
-              let address = input_line in_channel in
-              if address <> address_to_remove then
-                output_string out_channel (address ^ "\n")
-            done;
-            close_in in_channel;
-            close_out out_channel;
-            Sys.rename temp_file wallets_file;
-            print_string [ green ] "Wallet address removed successfully.\n"
-          with End_of_file ->
-            close_in in_channel;
-            close_out out_channel;
-            Sys.rename temp_file wallets_file;
-            print_string [ green ] "Wallet address removed successfully.\n"
-        with Sys_error _ ->
-          print_string [ red ] "Error removing wallet address.\n"
-    with Failure _ -> print_string [ red ] "Invalid input.\n")
+  let wallets = Csv.load wallets_file in
+  if List.length wallets = 0 then
+    print_string [ red ] "No active wallets found.\n"
+  else print_string [ yellow ] "Select a wallet to remove:\n";
+  let name = read_line () in
+  let rec aux lst acc =
+    match lst with
+    | [] -> acc
+    | h :: t -> if List.hd h = name then aux t acc else aux t (h :: acc)
+  in
+  let new_wallets = List.rev (aux wallets []) in
+  Csv.save wallets_file new_wallets;
+  print_string [ green ] "Removal operation successfully executed.\n"
 
 (* Function to fetch and display the prices of multiple cryptocurrencies *)
 and fetch_and_display_prices () =

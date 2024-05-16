@@ -2,4 +2,4 @@
  (public_name final)
  (name main)
  (modules main scraper)
- (libraries final ANSITerminal cohttp-lwt-unix yojson lwt cryptokit))
+ (libraries final ANSITerminal cohttp-lwt-unix yojson lwt cryptokit csv))
