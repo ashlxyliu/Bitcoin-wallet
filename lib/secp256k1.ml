@@ -58,12 +58,13 @@ let rec scalar_mult (k : Z.t) (p : point) =
       point_add q (scalar_mult k_half p_doubled)
 
 let generate_public_key privk =
-  let private_key = Z.of_string_base 16 privk in
-  let point = scalar_mult private_key g in
-  match point with
-  | Infinity -> failwith "Invalid private key"
-  | Point (x, y) ->
-      let x_hex = Z.format "%x" x in
-      (* Convert x to a hexadecimal string *)
-      if Z.equal (Z.rem y (Z.of_int 2)) Z.zero then "02" ^ x_hex
-      else "03" ^ x_hex
+  if String.length privk <> 64 then failwith "Invalid private key length"
+  else
+    let private_key = Z.of_string_base 16 privk in
+    let point = scalar_mult private_key g in
+    match point with
+    | Infinity -> failwith "Invalid private key"
+    | Point (x, y) ->
+        let x_hex = Z.format "%x" x in
+        if Z.equal (Z.rem y (Z.of_int 2)) Z.zero then "02" ^ x_hex
+        else "03" ^ x_hex

@@ -81,18 +81,11 @@ let base58 input =
 
 (* Function to compute the Base58Check encoding of a hexadecimal string *)
 let base58check input =
-  (* Add a version byte (0x00 for Bitcoin) to the input string *)
   let str = "00" ^ input in
-  (* Compute the double SHA-256 hash of the string *)
   let double_hash = sha256 (sha256 str) in
-  (* Take the first 4 bytes of the double hash as the checksum *)
   let checksum = String.sub double_hash 0 8 in
-  (* Append the checksum to the input string *)
   let next_str = str ^ checksum in
-  (* Encode the result in Base58 *)
-  let base58_result = base58 next_str in
-  (* Return the Base58Check-encoded string *)
-  base58_result
+  base58 next_str
 
 (* Additional helper functions and steps can be added here as needed *)
 

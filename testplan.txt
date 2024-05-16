@@ -1,0 +1,28 @@
+
+Test Plan:
+
+ This test suite aims to cover the functionalities of the `Final.Cryptolib` and `Final.Secp256k1` modules.
+ 
+ Automatically Tested:
+ - Cryptographic hash functions (SHA-256, RIPEMD-160)
+ - Base58Check encoding
+ - Public key generation using Secp256k1
+ 
+ Manually Tested:
+ - Integration of modules in the main application
+ - User interactions via the terminal interface
+ 
+ Modules Tested by OUnit:
+ - Final.Cryptolib: Testing SHA-256 and RIPEMD-160 hash functions, Base58Check encoding
+ - Final.Secp256k1: Testing public key generation
+ 
+ Test Case Development:
+ - Black Box Testing: Tests were developed based on the expected behavior of the functions without internal knowledge of the code.
+ - Glass Box Testing: Tests were also informed by the internal structure and logic of the code to cover edge cases.
+ - Randomized Testing: Some tests (e.g., hash functions) use varied input strings, including special characters and Unicode.
+  
+ Argument for Correctness:
+ - The test suite includes a variety of test cases that cover normal, edge, and error conditions for each function.
+ - With over 50 tests, it ensures robustness and reliability of the cryptographic functions and key generation process.
+ - By verifying outputs against known correct values, the test suite demonstrates the correctness of the system.
+ 
