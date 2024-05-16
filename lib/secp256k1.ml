@@ -1,5 +1,6 @@
 open Z
 open Cryptolib
+open Cryptokit
 
 type point = Infinity | Point of Z.t * Z.t
 
@@ -15,7 +16,6 @@ let g =
       Z.of_string_base 16
         "483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8" )
 
-(* Define the order of the curve *)
 let n =
   Z.of_string_base 16
     "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141"
@@ -74,10 +74,10 @@ let generate_public_key privk =
       if Z.equal (Z.rem y (Z.of_int 2)) Z.zero then "02" ^ x_hex
       else "03" ^ x_hex
 
-(* let sha256 str =
-   let hash = Hash.sha256 () in
-   hash#add_string str;
-   hash#result |> transform_string (Hexa.encode ()) *)
+let sha256 str =
+  let hash = Hash.sha256 () in
+  hash#add_string str;
+  hash#result |> transform_string (Hexa.encode ())
 
 let sign privkey message =
   let z_privkey = Z.of_string_base 16 privkey in
