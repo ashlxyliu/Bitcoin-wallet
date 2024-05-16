@@ -1,7 +1,9 @@
+open Cryptokit
 open Z
 
 type point = Infinity | Point of Z.t * Z.t
 
+(* Define the field prime, curve order, and generator point for secp256k1 *)
 let string_p =
   "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F"
 
@@ -13,6 +15,11 @@ let g =
         "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
       Z.of_string_base 16
         "483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8" )
+
+(* Define the order of the curve *)
+let n =
+  Z.of_string_base 16
+    "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141"
 
 let point_add p1 p2 =
   match (p1, p2) with
@@ -58,13 +65,40 @@ let rec scalar_mult (k : Z.t) (p : point) =
       point_add q (scalar_mult k_half p_doubled)
 
 let generate_public_key privk =
-  if String.length privk <> 64 then failwith "Invalid private key length"
-  else
-    let private_key = Z.of_string_base 16 privk in
-    let point = scalar_mult private_key g in
-    match point with
-    | Infinity -> failwith "Invalid private key"
-    | Point (x, y) ->
-        let x_hex = Z.format "%x" x in
-        if Z.equal (Z.rem y (Z.of_int 2)) Z.zero then "02" ^ x_hex
-        else "03" ^ x_hex
+  let private_key = Z.of_string_base 16 privk in
+  let point = scalar_mult private_key g in
+  match point with
+  | Infinity -> failwith "Invalid private key"
+  | Point (x, y) ->
+      let x_hex = Z.format "%x" x in
+      (* Convert x to a hexadecimal string *)
+      if Z.equal (Z.rem y (Z.of_int 2)) Z.zero then "02" ^ x_hex
+      else "03" ^ x_hex
+
+let sha256 str =
+  let hash = Hash.sha256 () in
+  hash#add_string str;
+  hash#result |> transform_string (Hexa.encode ())
+
+let sign privkey message =
+  let z_privkey = Z.of_string_base 16 privkey in
+  let z_message = Z.of_string_base 16 (sha256 message) in
+  (* Generate a random nonce k. This should be securely generated in practice. *)
+  let k =
+    Z.of_string_base 16
+      "3b9aca07d24c61b3d8b8d3ffbe59c9c6d84a26ec09dc59452f265b76a02e5c5e"
+  in
+  let r_point = scalar_mult k g in
+  match r_point with
+  | Infinity -> failwith "Generated point at infinity"
+  | Point (rx, _) ->
+      let r = Z.rem rx n in
+      let s =
+        Z.rem (Z.mul (Z.add z_message (Z.mul r z_privkey)) (Z.invert k n)) n
+      in
+      (r, s)
+
+let sign_to_hex (r, s) =
+  let r_hex = Z.format "%064x" r in
+  let s_hex = Z.format "%064x" s in
+  r_hex ^ s_hex
