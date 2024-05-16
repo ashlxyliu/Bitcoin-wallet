@@ -145,7 +145,6 @@ and check_balance () =
     if i = List.length wallet_list then print_string [ red ] "Invalid input.\n"
     else
       let address = addresses.(i) in
-      print_endline address;
       Lwt_main.run (fetch_and_display_balance address)
 
 (* Function to remove a wallet address *)
@@ -260,47 +259,100 @@ and display_balance balance =
 
 (* Function to create and sign a transaction *)
 and create_and_sign_transaction_menu () =
-  print_string [ yellow ] "Enter previous transaction ID: ";
-  let prev_txid = read_line () in
-  print_string [ yellow ] "Enter vout: ";
-  let vout = read_int () in
-  print_string [ yellow ] "Enter scriptSig: ";
-  let script_sig = read_line () in
-  print_string [ yellow ] "Enter sequence: ";
-  let sequence = Int64.of_string (read_line ()) in
-  print_string [ yellow ] "Enter value: ";
-  let value = Int64.of_string (read_line ()) in
-  print_string [ yellow ] "Enter scriptPubKey: ";
-  let script_pubkey = read_line () in
-  print_string [ yellow ] "Enter private key: ";
-  let privkey = read_line () in
-  let signed_tx =
-    create_and_sign_transaction prev_txid vout script_sig sequence value
-      script_pubkey privkey
-  in
-  let get_current_time () =
-    let tm = Unix.localtime (Unix.time ()) in
-    let date =
-      String.concat "-"
-        [
-          string_of_int (tm.tm_year + 1900);
-          string_of_int (tm.tm_mon + 1);
-          string_of_int tm.tm_mday;
-        ]
-    in
-    let time =
-      String.concat ":"
-        [
-          string_of_int tm.tm_hour;
-          string_of_int tm.tm_min;
-          string_of_int tm.tm_sec;
-        ]
-    in
-    date ^ " " ^ time
-  in
-  let transactions = Csv.load transactions_file in
-  Csv.save transactions_file ([ get_current_time (); signed_tx ] :: transactions);
-  print_string [ green ] ("Signed transaction: " ^ signed_tx ^ "\n")
+  let address_list = get_address_list () in
+  match List.length address_list with
+  | 0 ->
+      print_string [ red ]
+        "Error: please create a wallet before attempting to create a \
+         transaction.\n";
+      wait_for_enter ()
+  | _ -> (
+      print_string [ yellow ]
+        "Enter the name of the wallet you'd like to send from:";
+      let name = read_line () in
+      let transaction_list = Csv.load transactions_file in
+      let addresses = Array.of_list address_list in
+      let rec name_index lst acc =
+        match lst with
+        | [] -> acc
+        | h :: t -> if List.hd h = name then acc else name_index t (acc + 1)
+      in
+      let i = name_index (Csv.load wallets_file) 0 in
+      if i = List.length address_list then
+        print_string [ red ] "Invalid name.\n"
+      else
+        let address = addresses.(i) in
+        print_string [ yellow ]
+          "Enter your total amount to send (including transaction fee): ";
+        let txamt = read_float () in
+        let wallet_balance =
+          let rec aux lst acc =
+            match lst with
+            | [] -> acc
+            | h :: t -> aux t (float_of_string (List.hd (List.tl h)) +. acc)
+          in
+          aux transaction_list 0.0
+        in
+        let get_current_time () =
+          let tm = Unix.localtime (Unix.time ()) in
+          let date =
+            String.concat "-"
+              [
+                string_of_int (tm.tm_year + 1900);
+                string_of_int (tm.tm_mon + 1);
+                string_of_int tm.tm_mday;
+              ]
+          in
+          let time =
+            String.concat ":"
+              [
+                string_of_int tm.tm_hour;
+                string_of_int tm.tm_min;
+                string_of_int tm.tm_sec;
+              ]
+          in
+          date ^ " " ^ time
+        in
+        let rec first_column lst =
+          match lst with
+          | [] -> [] (* Base case: empty list returns an empty list *)
+          | [] :: xs ->
+              first_column xs (* Skip empty sub-lists to avoid errors *)
+          | (h :: _) :: xs ->
+              h
+              :: first_column
+                   xs (* Take the head of each non-empty sub-list and recurse *)
+        in
+        let wallet =
+          let rec aux lst =
+            match lst with
+            | [] -> failwith "Impossible: wallet does exist"
+            | h :: t -> if List.hd h = name then h else aux t
+          in
+          aux (Csv.load wallets_file)
+        in
+        match wallet_balance -. txamt with
+        | a when a > 0.0 ->
+            let signature =
+              create_and_sign_transaction
+                (String.concat "" (first_column transaction_list))
+                (int_of_float txamt) "abc123" 1234567890123L 9876543210987L
+                (List.hd (List.tl (List.tl wallet)))
+                (List.hd (List.tl (List.tl (List.tl wallet))))
+            in
+            Csv.save transactions_file
+              ([
+                 get_current_time (); string_of_float txamt; address; signature;
+               ]
+              :: transaction_list);
+            print_string [ green ]
+              "Transaction has been submitted to network for verification.\n";
+            print_string [ blue ] ("Transaction signature: " ^ signature)
+        | _ ->
+            print_string [ red ]
+              "Error: your desired amount to send exceeds that wallet's \
+               balance.";
+            ())
 
 (* Entry point of the program *)
 let () = main_menu ()
