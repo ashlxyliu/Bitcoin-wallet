@@ -3,7 +3,6 @@ open Cohttp
 open Cohttp_lwt_unix
 open Yojson.Basic.Util
 
-(* Exception to be raised in case of API errors *)
 exception APIError of string
 
 (* Function to create the URI for fetching cryptocurrency prices *)

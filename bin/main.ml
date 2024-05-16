@@ -8,12 +8,10 @@ open Lwt.Infix
 open Cohttp
 open Cohttp_lwt_unix
 open Yojson.Basic.Util
-open Final.Transaction (* Ensure Transaction module is opened *)
+open Final.Transaction
 
-(* Define a custom exception for API errors *)
 exception APIError of string
 
-(* Define the filename for storing wallet addresses *)
 let wallets_file = "wallets.csv"
 let transactions_file = "transactions.csv"
 
