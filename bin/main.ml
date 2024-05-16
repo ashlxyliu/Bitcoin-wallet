@@ -1,10 +1,7 @@
-<<<<<<< HEAD
 (** @author Eliza Konvicka (ejk236)
     @author Ashley Liu (awl77)
     @author Andy Marous (acm337)*)
 
-=======
->>>>>>> 5ce9874 (Implement transactions, creating and signing transactions. User can generate a signature using the private key.)
 open ANSITerminal
 open Final.Wallet
 open Lwt.Infix
@@ -281,7 +278,6 @@ and create_and_sign_transaction_menu () =
     create_and_sign_transaction prev_txid vout script_sig sequence value
       script_pubkey privkey
   in
-<<<<<<< HEAD
   let get_current_time () =
     let tm = Unix.localtime (Unix.time ()) in
     let date =
@@ -304,8 +300,6 @@ and create_and_sign_transaction_menu () =
   in
   let transactions = Csv.load transactions_file in
   Csv.save transactions_file ([ get_current_time (); signed_tx ] :: transactions);
-=======
->>>>>>> 5ce9874 (Implement transactions, creating and signing transactions. User can generate a signature using the private key.)
   print_string [ green ] ("Signed transaction: " ^ signed_tx ^ "\n")
 
 (* Entry point of the program *)
