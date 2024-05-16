@@ -1,5 +1,4 @@
 open Z
-open Cryptolib
 open Cryptokit
 
 type point = Infinity | Point of Z.t * Z.t
