@@ -15,6 +15,7 @@ exception APIError of string
 
 (* Define the filename for storing wallet addresses *)
 let wallets_file = "wallets.csv"
+let transactions_file = "transactions.csv"
 
 (* Function to save a wallet address to a file *)
 let save_wallet_address name address pk sk =
@@ -269,6 +270,28 @@ and create_and_sign_transaction_menu () =
     create_and_sign_transaction prev_txid vout script_sig sequence value
       script_pubkey privkey
   in
+  let get_current_time () =
+    let tm = Unix.localtime (Unix.time ()) in
+    let date =
+      String.concat "-"
+        [
+          string_of_int (tm.tm_year + 1900);
+          string_of_int (tm.tm_mon + 1);
+          string_of_int tm.tm_mday;
+        ]
+    in
+    let time =
+      String.concat ":"
+        [
+          string_of_int tm.tm_hour;
+          string_of_int tm.tm_min;
+          string_of_int tm.tm_sec;
+        ]
+    in
+    date ^ " " ^ time
+  in
+  let transactions = Csv.load transactions_file in
+  Csv.save transactions_file ([ get_current_time (); signed_tx ] :: transactions);
   print_string [ green ] ("Signed transaction: " ^ signed_tx ^ "\n")
 
 (* Entry point of the program *)
