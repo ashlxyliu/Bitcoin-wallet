@@ -1,4 +1,8 @@
 open ANSITerminal
+(** @author Eliza Konvicka (ejk236)
+    @author Ashley Liu (awl77)
+    @author Andy Marous (acm337)*)
+
 open Final.Wallet
 open Lwt.Infix
 open Cohttp
@@ -87,44 +91,90 @@ and display_active_wallets () =
   print_string [ yellow ] "Your active wallets:\n";
   try
     let in_channel = open_in wallets_file in
-    try
-      while true do
+    let rec read_wallets idx =
+      try
         let address = input_line in_channel in
-        print_string [ green ] (address ^ "\n")
-      done
-    with End_of_file -> close_in in_channel
+        print_string [ green ] (Printf.sprintf "%d. %s\n" idx address);
+        read_wallets (idx + 1)
+      with End_of_file -> close_in in_channel
+    in
+    read_wallets 1
   with Sys_error _ -> print_string [ red ] "No active wallets found.\n"
+
+(* Helper function to get a list of wallet addresses *)
+and get_wallet_list () =
+  try
+    let in_channel = open_in wallets_file in
+    let rec read_wallets acc =
+      try
+        let address = input_line in_channel in
+        read_wallets (address :: acc)
+      with End_of_file ->
+        close_in in_channel;
+        List.rev acc
+    in
+    read_wallets []
+  with Sys_error _ -> []
 
 (* Function to check the balance of a wallet *)
 and check_balance () =
-  print_string [ yellow ] "Enter wallet address to check balance: ";
-  let address = read_line () in
-  Lwt_main.run (fetch_and_display_balance address)
+  let wallet_list = get_wallet_list () in
+  if wallet_list = [] then print_string [ red ] "No active wallets found.\n"
+  else (
+    print_string [ yellow ] "Select a wallet to check balance:\n";
+    List.iteri
+      (fun idx address ->
+        print_string [ green ] (Printf.sprintf "%d. %s\n" (idx + 1) address))
+      wallet_list;
+    print_string [ Reset ] "> ";
+    try
+      let choice = read_int () in
+      if choice < 1 || choice > List.length wallet_list then
+        print_string [ red ] "Invalid choice.\n"
+      else
+        let address = List.nth wallet_list (choice - 1) in
+        Lwt_main.run (fetch_and_display_balance address)
+    with Failure _ -> print_string [ red ] "Invalid input.\n")
 
 (* Function to remove a wallet address *)
 and remove_wallet () =
-  print_string [ yellow ] "Enter wallet address to remove: ";
-  let address_to_remove = read_line () in
-  let temp_file = "temp_wallets.txt" in
-  try
-    let in_channel = open_in wallets_file in
-    let out_channel = open_out temp_file in
+  let wallet_list = get_wallet_list () in
+  if wallet_list = [] then print_string [ red ] "No active wallets found.\n"
+  else (
+    print_string [ yellow ] "Select a wallet to remove:\n";
+    List.iteri
+      (fun idx address ->
+        print_string [ green ] (Printf.sprintf "%d. %s\n" (idx + 1) address))
+      wallet_list;
+    print_string [ Reset ] "> ";
     try
-      while true do
-        let address = input_line in_channel in
-        if address <> address_to_remove then
-          output_string out_channel (address ^ "\n")
-      done;
-      close_in in_channel;
-      close_out out_channel;
-      Sys.rename temp_file wallets_file;
-      print_string [ green ] "Wallet address removed successfully.\n"
-    with End_of_file ->
-      close_in in_channel;
-      close_out out_channel;
-      Sys.rename temp_file wallets_file;
-      print_string [ green ] "Wallet address removed successfully.\n"
-  with Sys_error _ -> print_string [ red ] "Error removing wallet address.\n"
+      let choice = read_int () in
+      if choice < 1 || choice > List.length wallet_list then
+        print_string [ red ] "Invalid choice.\n"
+      else
+        let address_to_remove = List.nth wallet_list (choice - 1) in
+        let temp_file = "temp_wallets.txt" in
+        try
+          let in_channel = open_in wallets_file in
+          let out_channel = open_out temp_file in
+          try
+            while true do
+              let address = input_line in_channel in
+              if address <> address_to_remove then
+                output_string out_channel (address ^ "\n")
+            done;
+            close_in in_channel;
+            close_out out_channel;
+            Sys.rename temp_file wallets_file;
+            print_string [ green ] "Wallet address removed successfully.\n"
+          with End_of_file ->
+            close_in in_channel;
+            close_out out_channel;
+            Sys.rename temp_file wallets_file;
+            print_string [ green ] "Wallet address removed successfully.\n"
+        with Sys_error _ ->
+          print_string [ red ] "Error removing wallet address.\n"
+    with Failure _ -> print_string [ red ] "Invalid input.\n")
 
 (* Function to fetch and display the prices of multiple cryptocurrencies *)
 and fetch_and_display_prices () =
