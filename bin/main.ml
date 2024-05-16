@@ -1,8 +1,8 @@
-open ANSITerminal
 (** @author Eliza Konvicka (ejk236)
     @author Ashley Liu (awl77)
     @author Andy Marous (acm337)*)
 
+open ANSITerminal
 open Final.Wallet
 open Lwt.Infix
 open Cohttp
