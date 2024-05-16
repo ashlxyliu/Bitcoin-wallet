@@ -1,3 +1,4 @@
 (library
  (name final)
+ (modules cryptolib secp256k1 transaction wallet)
  (libraries cryptokit zarith mirage-crypto-ec))
