@@ -18,9 +18,9 @@ let wallets_file = "wallets.csv"
 let transactions_file = "transactions.csv"
 
 (* Function to save a wallet address to a file *)
-let save_wallet_address name address pk sk =
+let save_wallet_address name typ address pk sk =
   let wallets = Csv.load wallets_file in
-  Csv.save wallets_file ([ name; address; pk; sk ] :: wallets)
+  Csv.save wallets_file ([ name; typ; address; pk; sk ] :: wallets)
 
 (* Function to clear the terminal screen *)
 let clear_screen () =
@@ -84,14 +84,22 @@ let rec main_menu () =
 
 (* Function to create a new wallet *)
 and create_new_wallet () =
-  print_string [ yellow ] "Enter a name for your new wallet: \n";
-  let name = read_line () in
-  let sk = generate_private_key () in
-  let pk = generate_public_key sk in
-  let address = generate_wallet_address pk in
   print_string [ yellow ]
-    ("Your new wallet, " ^ name ^ ", has address: " ^ address ^ "\n");
-  save_wallet_address name address pk sk
+    "Please enter 'b' for a bitcoin wallet, or 'e' for an Ethereum wallet.\n";
+  let typ = read_line () in
+  match typ with
+  | "b" ->
+      print_string [ yellow ] "Enter a name for your new wallet: \n";
+      let name = read_line () in
+      let sk = generate_private_key () in
+      let pk = generate_public_key sk in
+      let address = generate_wallet_address pk in
+      print_string [ yellow ]
+        ("Your new wallet, " ^ name ^ ", has address: " ^ address ^ "\n");
+      save_wallet_address name "bitcoin" address pk sk
+  | _ ->
+      print_string [ red ] "Invalid wallet type. ";
+      wait_for_enter ()
 
 (* Function to display active wallets *)
 and display_active_wallets () =
