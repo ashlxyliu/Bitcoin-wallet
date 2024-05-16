@@ -15,7 +15,8 @@ let generate_private_key () =
 
 (* Function to generate a public key from a private key *)
 let generate_public_key privk =
-  (** Call the Secp256k1 module's generate_public_key function with the private key *)
+  (** Call the Secp256k1 module's generate_public_key function with the private 
+      key *)
   let public_key = Secp256k1.generate_public_key privk in
 
   (** Return the generated public key *)
