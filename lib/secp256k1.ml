@@ -1,9 +1,9 @@
 open Cryptokit
 open Z
+(* open Cryptolib *)
 
 type point = Infinity | Point of Z.t * Z.t
 
-(* Define the field prime, curve order, and generator point for secp256k1 *)
 let string_p =
   "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F"
 
@@ -16,7 +16,6 @@ let g =
       Z.of_string_base 16
         "483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8" )
 
-(* Define the order of the curve *)
 let n =
   Z.of_string_base 16
     "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141"

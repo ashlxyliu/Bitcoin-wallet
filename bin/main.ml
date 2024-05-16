@@ -8,6 +8,7 @@ open Lwt.Infix
 open Cohttp
 open Cohttp_lwt_unix
 open Yojson.Basic.Util
+open Final.Transaction (* Ensure Transaction module is opened *)
 
 (* Define a custom exception for API errors *)
 exception APIError of string
@@ -43,8 +44,9 @@ let print_main_menu () =
   print_string [ Foreground Cyan ] "2. Create New Wallet\n";
   print_string [ Foreground Cyan ] "3. Fetch Coin Prices\n";
   print_string [ Foreground Cyan ] "4. Check Balance\n";
-  print_string [ Foreground Cyan ] "5. Remove Wallet\n";
-  print_string [ Foreground Cyan ] "6. Exit\n";
+  print_string [ Foreground Cyan ] "5. Create and Sign Transaction\n";
+  print_string [ Foreground Cyan ] "6. Remove Wallet\n";
+  print_string [ Foreground Cyan ] "7. Exit\n";
   print_string [ Reset ] "> "
 
 (* Recursive function to display and handle the main menu *)
@@ -68,10 +70,14 @@ let rec main_menu () =
       wait_for_enter ();
       main_menu ()
   | "5" ->
-      remove_wallet ();
+      create_and_sign_transaction_menu ();
       wait_for_enter ();
       main_menu ()
   | "6" ->
+      remove_wallet ();
+      wait_for_enter ();
+      main_menu ()
+  | "7" ->
       print_string [ green ] "Exiting... Goodbye!\n";
       exit 0
   | _ ->
@@ -269,6 +275,28 @@ and extract_balance json = json |> member "balance" |> to_float_safe
 (* Function to display the balance of a wallet *)
 and display_balance balance =
   Printf.printf "Wallet Balance: %.8f BTC\n" (balance /. 1_000_000_000.)
+
+(* Function to create and sign a transaction *)
+and create_and_sign_transaction_menu () =
+  print_string [ yellow ] "Enter previous transaction ID: ";
+  let prev_txid = read_line () in
+  print_string [ yellow ] "Enter vout: ";
+  let vout = read_int () in
+  print_string [ yellow ] "Enter scriptSig: ";
+  let script_sig = read_line () in
+  print_string [ yellow ] "Enter sequence: ";
+  let sequence = Int64.of_string (read_line ()) in
+  print_string [ yellow ] "Enter value: ";
+  let value = Int64.of_string (read_line ()) in
+  print_string [ yellow ] "Enter scriptPubKey: ";
+  let script_pubkey = read_line () in
+  print_string [ yellow ] "Enter private key: ";
+  let privkey = read_line () in
+  let signed_tx =
+    create_and_sign_transaction prev_txid vout script_sig sequence value
+      script_pubkey privkey
+  in
+  print_string [ green ] ("Signed transaction: " ^ signed_tx ^ "\n")
 
 (* Entry point of the program *)
 let () = main_menu ()

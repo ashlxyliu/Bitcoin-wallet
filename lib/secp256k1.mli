@@ -15,6 +15,6 @@ val point_double : point -> point
 
 (* Function to perform scalar multiplication on the elliptic curve *)
 val scalar_mult : Z.t -> point -> point
-
-(* Function to generate a public key from a private key *)
 val generate_public_key : string -> string
+val sign : string -> string -> Z.t * Z.t
+val sign_to_hex : Z.t * Z.t -> string
