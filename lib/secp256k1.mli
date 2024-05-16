@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 (* Define the type for a point on the elliptic curve *)
 type point = Infinity | Point of Z.t * Z.t
 
@@ -15,6 +16,12 @@ val point_double : point -> point
 
 (* Function to perform scalar multiplication on the elliptic curve *)
 val scalar_mult : Z.t -> point -> point
+=======
+(* open Z *)
+
+type point = Infinity | Point of Z.t * Z.t
+
+>>>>>>> 5ce9874 (Implement transactions, creating and signing transactions. User can generate a signature using the private key.)
 val generate_public_key : string -> string
 val sign : string -> string -> Z.t * Z.t
 val sign_to_hex : Z.t * Z.t -> string
